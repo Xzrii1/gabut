@@ -1,560 +1,487 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Zrexx AI</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-
+    :root {
+      --bg:       #0a0a0a;
+      --s1:       #111111;
+      --s2:       #1a1a1a;
+      --s3:       #222222;
+      --b1:       #2a2a2a;
+      --b2:       #383838;
+      --text:     #ececec;
+      --t2:       #999999;
+      --t3:       #555555;
+      --accent:   #ffffff;
+      --success:  #22c55e;
+      --danger:   #ef4444;
+      --r:        10px;
+    }
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+    html, body { height:100%; overflow:hidden; }
     body {
-      font-family: 'Segoe UI', sans-serif;
-      background: #0d0d0d;
-      color: #e0e0e0;
-      height: 100vh;
-      display: flex;
-      flex-direction: column;
+      font-family:'Inter', system-ui, sans-serif;
+      background:var(--bg);
+      color:var(--text);
+      display:flex;
+      height:100vh;
+      font-size:15px;
+      line-height:1.6;
+      -webkit-font-smoothing:antialiased;
     }
 
-    /* ===== HEADER ===== */
-    header {
-      background: linear-gradient(135deg, #1a1a2e, #16213e);
-      padding: 14px 20px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      border-bottom: 1px solid #2a2a4a;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+    /* ── SIDEBAR ── */
+    #sidebar {
+      width:256px; flex-shrink:0;
+      background:var(--s1);
+      border-right:1px solid var(--b1);
+      display:flex; flex-direction:column;
+      transition:transform .25s ease;
+    }
+    .sb-top {
+      padding:18px 14px 14px;
+      border-bottom:1px solid var(--b1);
+      display:flex; align-items:center; justify-content:space-between;
+    }
+    .brand {
+      display:flex; align-items:center; gap:9px;
+      cursor:pointer; user-select:none;
+    }
+    .brand-icon {
+      width:30px; height:30px;
+      background:var(--accent); border-radius:7px;
+      display:flex; align-items:center; justify-content:center;
+      font-size:14px; font-weight:700; color:var(--bg);
+      letter-spacing:-.5px;
+    }
+    .brand-name { font-size:15px; font-weight:600; letter-spacing:-.3px; }
+
+    .new-btn {
+      width:28px; height:28px;
+      background:transparent; border:1px solid var(--b2);
+      border-radius:7px; cursor:pointer;
+      color:var(--t2); font-size:17px; line-height:1;
+      display:flex; align-items:center; justify-content:center;
+      transition:all .15s;
+    }
+    .new-btn:hover { background:var(--s2); color:var(--text); }
+
+    .sb-section { padding:14px 8px 6px; }
+    .sb-label {
+      font-size:11px; color:var(--t3); font-weight:500;
+      text-transform:uppercase; letter-spacing:.7px;
+      padding:0 8px; margin-bottom:4px;
+    }
+    .chat-item {
+      display:flex; align-items:center; gap:8px;
+      padding:8px 10px; border-radius:8px;
+      cursor:pointer; color:var(--t2); font-size:13.5px;
+      white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+      transition:all .12s;
+    }
+    .chat-item:hover, .chat-item.active { background:var(--s2); color:var(--text); }
+    .chat-icon { font-size:13px; flex-shrink:0; opacity:.5; }
+
+    .sb-bottom {
+      margin-top:auto;
+      padding:12px 8px;
+      border-top:1px solid var(--b1);
+    }
+    .model-pill {
+      display:flex; align-items:center; gap:8px;
+      padding:9px 12px;
+      background:var(--s2); border:1px solid var(--b1);
+      border-radius:9px; cursor:default;
+    }
+    .model-dot {
+      width:7px; height:7px; background:var(--success);
+      border-radius:50%; flex-shrink:0;
+      box-shadow:0 0 6px rgba(34,197,94,.5);
+    }
+    .model-name {
+      font-size:12px; color:var(--t2);
+      overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
     }
 
-    .logo {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
+    /* ── MAIN ── */
+    #main { flex:1; display:flex; flex-direction:column; overflow:hidden; }
 
-    .logo-icon {
-      width: 36px;
-      height: 36px;
-      background: linear-gradient(135deg, #6c63ff, #3ecfcf);
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: font-size;
-      font-size: 18px;
-      font-weight: bold;
-      justify-content: center;
+    /* ── TOPBAR ── */
+    #topbar {
+      display:flex; align-items:center; justify-content:space-between;
+      padding:12px 22px;
+      border-bottom:1px solid var(--b1);
+      background:var(--bg); flex-shrink:0;
     }
-
-    .logo h1 {
-      font-size: 20px;
-      font-weight: 700;
-      background: linear-gradient(90deg, #6c63ff, #3ecfcf);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
+    .topbar-left { display:flex; align-items:center; gap:10px; }
+    #sb-toggle {
+      display:none;
+      background:transparent; border:none;
+      color:var(--t2); font-size:18px; cursor:pointer;
+      width:32px; height:32px; border-radius:7px;
+      align-items:center; justify-content:center; transition:all .15s;
     }
+    #sb-toggle:hover { background:var(--s2); color:var(--text); }
+    .topbar-title { font-size:14px; font-weight:500; color:var(--t2); }
 
-    .status-dot {
-      width: 8px; height: 8px;
-      background: #3ecfcf;
-      border-radius: 50%;
-      animation: pulse 2s infinite;
-      margin-left: 6px;
+    .topbar-right { display:flex; align-items:center; gap:8px; }
+    .top-btn {
+      background:transparent; border:1px solid var(--b1);
+      color:var(--t2); font-size:13px;
+      padding:6px 12px; border-radius:8px; cursor:pointer;
+      display:flex; align-items:center; gap:6px;
+      transition:all .15s; font-family:'Inter',sans-serif;
     }
+    .top-btn:hover { background:var(--s2); border-color:var(--b2); color:var(--text); }
+    .top-btn.del:hover { border-color:var(--danger); color:var(--danger); background:rgba(239,68,68,.06); }
 
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.3; }
-    }
-
-    .header-right {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .model-badge {
-      font-size: 11px;
-      background: rgba(108,99,255,0.15);
-      border: 1px solid #6c63ff55;
-      color: #a09aff;
-      padding: 3px 10px;
-      border-radius: 20px;
-    }
-
-    /* ===== CHAT AREA ===== */
+    /* ── CHAT ── */
     #chat-container {
-      flex: 1;
-      overflow-y: auto;
-      padding: 20px;
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-      scrollbar-width: thin;
-      scrollbar-color: #2a2a4a transparent;
+      flex:1; overflow-y:auto; scroll-behavior:smooth;
+    }
+    #chat-container::-webkit-scrollbar { width:4px; }
+    #chat-container::-webkit-scrollbar-thumb { background:var(--b1); border-radius:4px; }
+
+    #chat-inner {
+      max-width:720px; margin:0 auto;
+      padding:28px 20px 16px;
+      display:flex; flex-direction:column;
     }
 
-    #chat-container::-webkit-scrollbar { width: 5px; }
-    #chat-container::-webkit-scrollbar-track { background: transparent; }
-    #chat-container::-webkit-scrollbar-thumb { background: #2a2a4a; border-radius: 4px; }
-
-    .message {
-      display: flex;
-      gap: 10px;
-      max-width: 75%;
-      animation: fadeIn 0.3s ease;
+    /* ── WELCOME ── */
+    #welcome {
+      display:flex; flex-direction:column;
+      align-items:center; text-align:center;
+      padding:72px 20px 40px; gap:16px;
     }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(8px); }
-      to   { opacity: 1; transform: translateY(0); }
+    .w-icon {
+      width:52px; height:52px; background:var(--accent);
+      border-radius:14px;
+      display:flex; align-items:center; justify-content:center;
+      font-size:22px; font-weight:700; color:var(--bg);
+      letter-spacing:-1px; margin-bottom:4px;
     }
-
-    .message.user { align-self: flex-end; flex-direction: row-reverse; }
-    .message.ai   { align-self: flex-start; }
-
-    .avatar {
-      width: 34px; height: 34px;
-      border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 14px;
-      flex-shrink: 0;
+    #welcome h2 { font-size:26px; font-weight:600; letter-spacing:-.5px; }
+    #welcome p { font-size:14.5px; color:var(--t2); max-width:400px; }
+    .chips {
+      display:grid; grid-template-columns:1fr 1fr;
+      gap:9px; width:100%; max-width:460px; margin-top:8px;
     }
-
-    .avatar.ai-avatar {
-      background: linear-gradient(135deg, #6c63ff, #3ecfcf);
+    .chip {
+      background:var(--s1); border:1px solid var(--b1);
+      color:var(--t2); padding:12px 15px;
+      border-radius:10px; font-size:13.5px;
+      cursor:pointer; text-align:left;
+      transition:all .15s; font-family:'Inter',sans-serif; line-height:1.4;
     }
+    .chip:hover { background:var(--s2); border-color:var(--b2); color:var(--text); }
 
-    .avatar.user-avatar {
-      background: linear-gradient(135deg, #ff6584, #ff8e53);
+    /* ── MESSAGES ── */
+    .msg-row {
+      display:flex; gap:12px; padding:12px 0;
+      animation:msgIn .2s ease;
     }
+    @keyframes msgIn {
+      from { opacity:0; transform:translateY(7px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+    .msg-row.user { flex-direction:row-reverse; }
+
+    .av {
+      width:30px; height:30px; border-radius:8px;
+      flex-shrink:0; display:flex; align-items:center; justify-content:center;
+      font-size:13px; font-weight:600; margin-top:2px;
+      font-family:'Inter',sans-serif;
+    }
+    .av.ai  { background:var(--accent); color:var(--bg); font-size:12px; }
+    .av.usr { background:var(--s3); border:1px solid var(--b2); color:var(--t2); font-size:15px; }
+
+    .msg-body { flex:1; min-width:0; }
+    .msg-row.user .msg-body { display:flex; flex-direction:column; align-items:flex-end; }
 
     .bubble {
-      padding: 12px 16px;
-      border-radius: 16px;
-      font-size: 14px;
-      line-height: 1.6;
-      max-width: 100%;
-      white-space: pre-wrap;
-      word-break: break-word;
+      font-size:14.5px; line-height:1.72;
+      color:var(--text); word-break:break-word;
+    }
+    .msg-row.user .bubble {
+      background:var(--s2); border:1px solid var(--b1);
+      padding:10px 15px; border-radius:12px 3px 12px 12px;
+      max-width:80%;
     }
 
-    .message.user .bubble {
-      background: linear-gradient(135deg, #6c63ff22, #3ecfcf22);
-      border: 1px solid #6c63ff44;
-      border-radius: 16px 4px 16px 16px;
+    /* markdown */
+    .bubble p { margin-bottom:10px; }
+    .bubble p:last-child { margin-bottom:0; }
+    .bubble strong { font-weight:600; }
+    .bubble em { font-style:italic; color:var(--t2); }
+    .bubble h1,.bubble h2,.bubble h3 { font-weight:600; margin:14px 0 6px; letter-spacing:-.3px; }
+    .bubble h1 { font-size:19px; }
+    .bubble h2 { font-size:16px; }
+    .bubble h3 { font-size:14.5px; }
+    .bubble ul,.bubble ol { padding-left:20px; margin:8px 0; }
+    .bubble li { margin:4px 0; }
+    .bubble code {
+      font-family:'JetBrains Mono',monospace; font-size:12.5px;
+      background:var(--s2); border:1px solid var(--b1);
+      color:#c9d1d9; padding:1px 6px; border-radius:5px;
     }
+    .bubble pre {
+      background:#0d1117; border:1px solid var(--b1);
+      border-radius:10px; padding:15px; margin:10px 0; overflow-x:auto;
+    }
+    .bubble pre code { background:none; border:none; padding:0; font-size:13px; color:#c9d1d9; }
+    .bubble blockquote { border-left:2px solid var(--b2); padding-left:13px; color:var(--t2); margin:8px 0; }
+    .bubble hr { border:none; border-top:1px solid var(--b1); margin:12px 0; }
+    .bubble a { color:var(--text); text-decoration:underline; text-underline-offset:3px; }
+    .bubble table { width:100%; border-collapse:collapse; margin:10px 0; font-size:13.5px; }
+    .bubble th,.bubble td { padding:8px 11px; border:1px solid var(--b1); text-align:left; }
+    .bubble th { background:var(--s2); font-weight:600; }
 
-    .message.ai .bubble {
-      background: #1a1a2e;
-      border: 1px solid #2a2a4a;
-      border-radius: 4px 16px 16px 16px;
+    .msg-actions {
+      display:flex; align-items:center; gap:2px;
+      margin-top:6px; opacity:0; transition:opacity .15s;
     }
+    .msg-row:hover .msg-actions { opacity:1; }
+    .act-btn {
+      background:transparent; border:none;
+      color:var(--t3); font-size:12px;
+      padding:4px 8px; border-radius:6px; cursor:pointer;
+      display:flex; align-items:center; gap:4px;
+      transition:all .15s; font-family:'Inter',sans-serif;
+    }
+    .act-btn:hover { background:var(--s2); color:var(--t2); }
+    .act-btn.ok { color:var(--success); }
+    .msg-time { font-size:11px; color:var(--t3); padding:4px 8px; }
 
-    /* typing indicator */
-    .typing-dots {
-      display: flex; gap: 4px; align-items: center; padding: 8px 4px;
-    }
+    /* typing */
+    .typing-dots { display:flex; gap:4px; align-items:center; padding:3px 0; }
     .typing-dots span {
-      width: 7px; height: 7px;
-      background: #6c63ff;
-      border-radius: 50%;
-      animation: bounce 1.2s infinite;
+      width:6px; height:6px; background:var(--t3);
+      border-radius:50%; animation:td 1.3s infinite;
     }
-    .typing-dots span:nth-child(2) { animation-delay: 0.2s; }
-    .typing-dots span:nth-child(3) { animation-delay: 0.4s; }
-    @keyframes bounce {
-      0%, 80%, 100% { transform: translateY(0); }
-      40%           { transform: translateY(-6px); }
+    .typing-dots span:nth-child(2) { animation-delay:.2s; }
+    .typing-dots span:nth-child(3) { animation-delay:.4s; }
+    @keyframes td {
+      0%,60%,100% { transform:translateY(0); opacity:.4; }
+      30% { transform:translateY(-5px); opacity:1; }
     }
 
-    /* ===== INPUT AREA ===== */
-    .input-wrapper {
-      background: #111122;
-      border-top: 1px solid #2a2a4a;
-      padding: 14px 20px;
+    /* ── INPUT ── */
+    #input-area {
+      padding:14px 20px 18px;
+      border-top:1px solid var(--b1);
+      background:var(--bg); flex-shrink:0;
     }
-
-    .input-row {
-      display: flex;
-      gap: 10px;
-      align-items: flex-end;
-      background: #1a1a2e;
-      border: 1px solid #2a2a4a;
-      border-radius: 14px;
-      padding: 8px 8px 8px 16px;
-      transition: border-color 0.2s;
+    #input-wrap { max-width:720px; margin:0 auto; position:relative; }
+    #input-box {
+      width:100%; background:var(--s1);
+      border:1px solid var(--b1); border-radius:13px;
+      padding:13px 52px 13px 17px;
+      color:var(--text); font-size:15px;
+      font-family:'Inter',sans-serif; resize:none; outline:none;
+      line-height:1.6; max-height:200px; min-height:52px;
+      transition:border-color .15s, box-shadow .15s;
+      display:block;
     }
-
-    .input-row:focus-within {
-      border-color: #6c63ff;
-    }
-
-    #user-input {
-      flex: 1;
-      background: transparent;
-      border: none;
-      outline: none;
-      color: #e0e0e0;
-      font-size: 14px;
-      resize: none;
-      max-height: 120px;
-      line-height: 1.5;
-      padding: 4px 0;
-      font-family: inherit;
-    }
-
+    #input-box::placeholder { color:var(--t3); }
+    #input-box:focus { border-color:var(--b2); box-shadow:0 0 0 3px rgba(255,255,255,.04); }
     #send-btn {
-      background: linear-gradient(135deg, #6c63ff, #3ecfcf);
-      border: none;
-      border-radius: 10px;
-      width: 38px; height: 38px;
-      cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      flex-shrink: 0;
-      transition: opacity 0.2s, transform 0.1s;
+      position:absolute; right:9px; bottom:9px;
+      width:34px; height:34px; background:var(--accent);
+      border:none; border-radius:8px; cursor:pointer;
+      display:flex; align-items:center; justify-content:center;
+      transition:opacity .15s, transform .1s;
     }
+    #send-btn:hover { opacity:.85; }
+    #send-btn:active { transform:scale(.92); }
+    #send-btn:disabled { opacity:.25; cursor:not-allowed; }
+    #send-btn svg { width:16px; height:16px; fill:var(--bg); }
+    .input-hint { text-align:center; font-size:11.5px; color:var(--t3); margin-top:9px; }
 
-    #send-btn:hover { opacity: 0.85; }
-    #send-btn:active { transform: scale(0.93); }
-
-    #send-btn svg { width: 18px; height: 18px; fill: white; }
-
-    .input-hint {
-      font-size: 11px;
-      color: #444466;
-      text-align: center;
-      margin-top: 8px;
-    }
-
-    /* ===== WELCOME SCREEN ===== */
-    #welcome {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: 12px;
-      flex: 1;
-      padding: 40px 20px;
-      text-align: center;
-    }
-
-    #welcome h2 {
-      font-size: 26px;
-      background: linear-gradient(90deg, #6c63ff, #3ecfcf);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-
-    #welcome p {
-      color: #666688;
-      font-size: 14px;
-      max-width: 360px;
-    }
-
-    .suggestion-chips {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      justify-content: center;
-      margin-top: 10px;
-    }
-
-    .chip {
-      background: #1a1a2e;
-      border: 1px solid #2a2a4a;
-      color: #a09aff;
-      padding: 7px 14px;
-      border-radius: 20px;
-      font-size: 13px;
-      cursor: pointer;
-      transition: background 0.2s, border-color 0.2s;
-    }
-
-    .chip:hover {
-      background: #222244;
-      border-color: #6c63ff;
-    }
-
-    /* ===== ADMIN PANEL ===== */
+    /* ── ADMIN ── */
     #admin-overlay {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.7);
-      z-index: 100;
-      align-items: center;
-      justify-content: center;
-      backdrop-filter: blur(4px);
+      display:none; position:fixed; inset:0;
+      background:rgba(0,0,0,.82); z-index:200;
+      align-items:center; justify-content:center;
+      backdrop-filter:blur(8px);
     }
-
-    #admin-overlay.open { display: flex; }
-
+    #admin-overlay.open { display:flex; }
     #admin-panel {
-      background: #12122a;
-      border: 1px solid #2a2a4a;
-      border-radius: 18px;
-      width: 90%;
-      max-width: 560px;
-      max-height: 85vh;
-      overflow-y: auto;
-      padding: 28px;
-      box-shadow: 0 10px 40px rgba(0,0,0,0.6);
-      animation: slideUp 0.3s ease;
+      background:var(--s1); border:1px solid var(--b2);
+      border-radius:16px; width:92%; max-width:500px;
+      max-height:88vh; overflow-y:auto; padding:26px;
+      box-shadow:0 24px 64px rgba(0,0,0,.7);
+      animation:pIn .2s ease;
     }
-
-    @keyframes slideUp {
-      from { opacity: 0; transform: translateY(30px); }
-      to   { opacity: 1; transform: translateY(0); }
+    #admin-panel::-webkit-scrollbar { width:4px; }
+    #admin-panel::-webkit-scrollbar-thumb { background:var(--b1); border-radius:4px; }
+    @keyframes pIn {
+      from { opacity:0; transform:scale(.97) translateY(10px); }
+      to   { opacity:1; transform:scale(1) translateY(0); }
     }
-
-    #admin-panel h2 {
-      font-size: 18px;
-      margin-bottom: 6px;
-      background: linear-gradient(90deg, #6c63ff, #3ecfcf);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
+    .panel-hd { margin-bottom:22px; }
+    .panel-hd h2 { font-size:16px; font-weight:600; letter-spacing:-.3px; }
+    .panel-hd p { font-size:13px; color:var(--t2); margin-top:4px; }
+    .fg { margin-bottom:15px; }
+    .fg label { display:block; font-size:12px; color:var(--t2); font-weight:500; margin-bottom:6px; }
+    .fg input, .fg textarea, .fg select {
+      width:100%; background:var(--s2); border:1px solid var(--b1);
+      border-radius:8px; color:var(--text); padding:9px 13px;
+      font-size:14px; outline:none; font-family:'Inter',sans-serif; transition:border-color .15s;
     }
-
-    #admin-panel p.subtitle {
-      font-size: 12px;
-      color: #555577;
-      margin-bottom: 22px;
+    .fg input[type="password"] { letter-spacing:2px; }
+    .fg input:focus, .fg textarea:focus, .fg select:focus { border-color:var(--b2); }
+    .fg textarea { min-height:86px; resize:vertical; line-height:1.55; }
+    .fg select option { background:var(--s2); }
+    .divider { height:1px; background:var(--b1); margin:18px 0; }
+    .sec-label { font-size:11px; font-weight:600; color:var(--t3); text-transform:uppercase; letter-spacing:.8px; margin-bottom:13px; }
+    .btn-row { display:flex; gap:10px; margin-top:18px; }
+    .btn-p {
+      flex:1; background:var(--accent); border:none;
+      border-radius:8px; color:var(--bg); font-size:14px; font-weight:600;
+      padding:11px; cursor:pointer; transition:opacity .15s; font-family:'Inter',sans-serif;
     }
-
-    .form-group {
-      margin-bottom: 18px;
+    .btn-p:hover { opacity:.85; }
+    .btn-s {
+      flex:1; background:transparent; border:1px solid var(--b1);
+      border-radius:8px; color:var(--t2); font-size:14px;
+      padding:11px; cursor:pointer; transition:all .15s; font-family:'Inter',sans-serif;
     }
+    .btn-s:hover { border-color:var(--b2); color:var(--text); }
+    #admin-login { display:flex; flex-direction:column; gap:12px; }
+    #login-error { font-size:13px; color:var(--danger); text-align:center; display:none; }
 
-    .form-group label {
-      display: block;
-      font-size: 12px;
-      color: #8888aa;
-      margin-bottom: 6px;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-
-    .form-group input,
-    .form-group textarea,
-    .form-group select {
-      width: 100%;
-      background: #1a1a2e;
-      border: 1px solid #2a2a4a;
-      border-radius: 10px;
-      color: #e0e0e0;
-      padding: 10px 14px;
-      font-size: 14px;
-      outline: none;
-      font-family: inherit;
-      transition: border-color 0.2s;
-    }
-
-    .form-group input[type="password"] { letter-spacing: 3px; }
-
-    .form-group input:focus,
-    .form-group textarea:focus,
-    .form-group select:focus {
-      border-color: #6c63ff;
-    }
-
-    .form-group textarea {
-      min-height: 100px;
-      resize: vertical;
-      line-height: 1.5;
-    }
-
-    .form-group select option {
-      background: #1a1a2e;
-    }
-
-    .admin-btn-row {
-      display: flex;
-      gap: 10px;
-      margin-top: 24px;
-    }
-
-    .btn-save {
-      flex: 1;
-      background: linear-gradient(135deg, #6c63ff, #3ecfcf);
-      border: none;
-      border-radius: 10px;
-      color: white;
-      font-size: 14px;
-      font-weight: 600;
-      padding: 12px;
-      cursor: pointer;
-      transition: opacity 0.2s;
-    }
-
-    .btn-save:hover { opacity: 0.85; }
-
-    .btn-cancel {
-      flex: 1;
-      background: transparent;
-      border: 1px solid #2a2a4a;
-      border-radius: 10px;
-      color: #8888aa;
-      font-size: 14px;
-      padding: 12px;
-      cursor: pointer;
-      transition: border-color 0.2s;
-    }
-
-    .btn-cancel:hover { border-color: #6c63ff; color: #a09aff; }
-
-    /* login screen for admin */
-    #admin-login {
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-    }
-
-    #admin-login input {
-      width: 100%;
-      background: #1a1a2e;
-      border: 1px solid #2a2a4a;
-      border-radius: 10px;
-      color: #e0e0e0;
-      padding: 11px 14px;
-      font-size: 14px;
-      outline: none;
-      letter-spacing: 3px;
-    }
-
-    #admin-login input:focus { border-color: #6c63ff; }
-
-    #login-error {
-      color: #ff6584;
-      font-size: 13px;
-      text-align: center;
-      display: none;
-    }
-
-    .divider {
-      height: 1px;
-      background: #2a2a4a;
-      margin: 20px 0;
-    }
-
-    /* section label */
-    .section-label {
-      font-size: 11px;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      color: #6c63ff;
-      margin-bottom: 14px;
-      margin-top: 4px;
-    }
-
-    /* toast */
+    /* ── TOAST ── */
     #toast {
-      position: fixed;
-      bottom: 80px;
-      left: 50%;
-      transform: translateX(-50%) translateY(20px);
-      background: #1a1a2e;
-      border: 1px solid #6c63ff55;
-      color: #a09aff;
-      padding: 10px 20px;
-      border-radius: 30px;
-      font-size: 13px;
-      opacity: 0;
-      transition: all 0.3s;
-      pointer-events: none;
-      z-index: 200;
+      position:fixed; bottom:88px; left:50%;
+      transform:translateX(-50%) translateY(10px);
+      background:var(--s2); border:1px solid var(--b2);
+      color:var(--t2); padding:9px 18px; border-radius:30px;
+      font-size:13px; opacity:0; transition:all .25s;
+      pointer-events:none; z-index:300; font-family:'Inter',sans-serif;
     }
+    #toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
 
-    #toast.show {
-      opacity: 1;
-      transform: translateX(-50%) translateY(0);
-    }
-
-    /* clear btn */
-    #clear-btn {
-      background: transparent;
-      border: 1px solid #2a2a4a;
-      color: #666688;
-      font-size: 12px;
-      padding: 4px 12px;
-      border-radius: 20px;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-
-    #clear-btn:hover {
-      border-color: #ff658455;
-      color: #ff6584;
+    /* ── RESPONSIVE ── */
+    @media (max-width:680px) {
+      #sidebar { position:fixed; left:0; top:0; bottom:0; z-index:100; transform:translateX(-100%); }
+      #sidebar.open { transform:translateX(0); box-shadow:12px 0 40px rgba(0,0,0,.5); }
+      #sb-toggle { display:flex; }
+      #chat-inner { padding:20px 14px 14px; }
+      #input-area { padding:12px 14px 16px; }
+      .chips { grid-template-columns:1fr; }
     }
   </style>
 </head>
 <body>
 
-<!-- HEADER -->
-<header>
-  <div class="logo">
-    <div class="logo-icon">Z</div>
-    <h1>Zrexx AI</h1>
-    <div class="status-dot"></div>
+<!-- SIDEBAR -->
+<div id="sidebar">
+  <div class="sb-top">
+    <div class="brand" title="Klik logo 5x untuk Admin Panel">
+      <div class="brand-icon">Z</div>
+      <span class="brand-name">Zrexx AI</span>
+    </div>
+    <button class="new-btn" id="new-chat-btn" title="Chat Baru">＋</button>
   </div>
-  <div class="header-right">
-    <span class="model-badge" id="model-display">llama-3.3-70b-versatile</span>
-    <button id="clear-btn" title="Hapus chat">🗑 Hapus Chat</button>
-    <!-- Admin trigger: klik logo 5x -->
-  </div>
-</header>
 
-<!-- CHAT AREA -->
-<div id="chat-container">
-  <div id="welcome">
-    <div style="font-size:48px">🤖</div>
-    <h2>Halo! Saya Zrexx AI</h2>
-    <p id="welcome-desc">Asisten AI yang siap membantu Anda. Silakan mulai percakapan!</p>
-    <div class="suggestion-chips" id="chips">
-      <div class="chip" onclick="sendChip(this)">Apa yang bisa kamu lakukan?</div>
-      <div class="chip" onclick="sendChip(this)">Bantu saya belajar coding</div>
-      <div class="chip" onclick="sendChip(this)">Ceritakan sesuatu yang menarik</div>
-      <div class="chip" onclick="sendChip(this)">Buat cerita pendek</div>
+  <div class="sb-section">
+    <div class="sb-label">Hari ini</div>
+    <div class="chat-item active" id="current-item">
+      <span class="chat-icon">💬</span>
+      <span id="item-label">Chat Baru</span>
+    </div>
+  </div>
+
+  <div class="sb-bottom">
+    <div class="model-pill">
+      <div class="model-dot"></div>
+      <span class="model-name" id="model-display">llama-3.3-70b-versatile</span>
     </div>
   </div>
 </div>
 
-<!-- INPUT -->
-<div class="input-wrapper">
-  <div class="input-row">
-    <textarea id="user-input" placeholder="Ketik pesan..." rows="1"></textarea>
-    <button id="send-btn">
-      <svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg>
-    </button>
+<!-- MAIN -->
+<div id="main">
+  <div id="topbar">
+    <div class="topbar-left">
+      <button id="sb-toggle">☰</button>
+      <span class="topbar-title" id="chat-title">Chat Baru</span>
+    </div>
+    <div class="topbar-right">
+      <button class="top-btn del" id="clear-btn">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+          <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/>
+          <path d="M10 11v6M14 11v6"/>
+        </svg>
+        Hapus
+      </button>
+    </div>
   </div>
-  <p class="input-hint">Zrexx AI bisa membuat kesalahan. Verifikasi informasi penting.</p>
+
+  <div id="chat-container">
+    <div id="chat-inner">
+      <div id="welcome">
+        <div class="w-icon">Z</div>
+        <h2>Apa yang bisa gw bantu?</h2>
+        <p id="welcome-desc">Tanyain apa aja — coding, nulis, ngobrol santai, semuanya bisa.</p>
+        <div class="chips">
+          <div class="chip" onclick="sendChip(this)">💡 Apa yang bisa kamu lakukan?</div>
+          <div class="chip" onclick="sendChip(this)">💻 Bantu gw belajar coding</div>
+          <div class="chip" onclick="sendChip(this)">✨ Ceritain sesuatu yang menarik</div>
+          <div class="chip" onclick="sendChip(this)">📝 Buat cerita pendek</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="input-area">
+    <div id="input-wrap">
+      <textarea id="input-box" placeholder="Kirim pesan…" rows="1"></textarea>
+      <button id="send-btn" title="Kirim (Enter)">
+        <svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg>
+      </button>
+    </div>
+    <p class="input-hint">Zrexx AI dapat membuat kesalahan. Verifikasi informasi penting.</p>
+  </div>
 </div>
 
-<!-- ADMIN OVERLAY -->
+<!-- ADMIN -->
 <div id="admin-overlay">
   <div id="admin-panel">
-    <h2>⚙️ Zrexx AI — Admin Panel</h2>
-    <p class="subtitle">Hanya pemilik yang dapat mengakses panel ini.</p>
 
-    <!-- LOGIN SCREEN -->
     <div id="admin-login">
-      <div class="form-group">
-        <label>Password Admin</label>
-        <input type="password" id="admin-password-input" placeholder="Masukkan password..." onkeydown="if(event.key==='Enter') adminLogin()"/>
+      <div class="panel-hd">
+        <h2>Admin Panel</h2>
+        <p>Masukkan password untuk mengakses pengaturan.</p>
+      </div>
+      <div class="fg">
+        <label>Password</label>
+        <input type="password" id="admin-pw" placeholder="••••••••" onkeydown="if(event.key==='Enter')adminLogin()"/>
       </div>
       <div id="login-error">Password salah. Coba lagi.</div>
-      <button class="btn-save" onclick="adminLogin()">Masuk</button>
-      <button class="btn-cancel" onclick="closeAdmin()">Batal</button>
+      <div class="btn-row">
+        <button class="btn-p" onclick="adminLogin()">Masuk</button>
+        <button class="btn-s" onclick="closeAdmin()">Batal</button>
+      </div>
     </div>
 
-    <!-- SETTINGS SCREEN (hidden until logged in) -->
     <div id="admin-settings" style="display:none">
-      <div class="section-label">🔑 API & Model</div>
-      <div class="form-group">
-        <label>Groq API Key</label>
-        <input type="password" id="cfg-apikey" placeholder="gsk_..."/>
+      <div class="panel-hd">
+        <h2>Pengaturan</h2>
+        <p>Konfigurasi model, kepribadian, dan keamanan.</p>
       </div>
-      <div class="form-group">
+
+      <div class="sec-label">API & Model</div>
+      <div class="fg">
+        <label>Groq API Key</label>
+        <input type="password" id="cfg-apikey" placeholder="gsk_…"/>
+      </div>
+      <div class="fg">
         <label>Model</label>
         <select id="cfg-model">
           <option value="llama-3.3-70b-versatile">Llama 3.3 70B Versatile</option>
@@ -567,315 +494,326 @@
       </div>
 
       <div class="divider"></div>
-      <div class="section-label">🧠 Kepribadian AI</div>
-
-      <div class="form-group">
+      <div class="sec-label">Kepribadian AI</div>
+      <div class="fg">
         <label>Nama AI</label>
         <input type="text" id="cfg-name" placeholder="Zrexx AI"/>
       </div>
-      <div class="form-group">
-        <label>System Prompt / Kepribadian</label>
-        <textarea id="cfg-system" placeholder="Contoh: Kamu adalah Zrexx AI, asisten yang ramah, pintar, dan selalu menjawab dalam bahasa Indonesia..."></textarea>
+      <div class="fg">
+        <label>System Prompt</label>
+        <textarea id="cfg-system"></textarea>
       </div>
-      <div class="form-group">
-        <label>Deskripsi Welcome (ditampilkan ke user)</label>
-        <input type="text" id="cfg-welcome-desc" placeholder="Asisten AI yang siap membantu Anda."/>
+      <div class="fg">
+        <label>Deskripsi Welcome</label>
+        <input type="text" id="cfg-welcome-desc"/>
       </div>
-      <div class="form-group">
-        <label>Suhu (Temperature) — 0.0 santai, 1.0 kreatif</label>
-        <input type="number" id="cfg-temp" min="0" max="2" step="0.1" placeholder="0.7"/>
+      <div class="fg">
+        <label>Temperature (0.0 – 2.0)</label>
+        <input type="number" id="cfg-temp" min="0" max="2" step="0.1"/>
       </div>
-      <div class="form-group">
-        <label>Max Token Jawaban</label>
-        <input type="number" id="cfg-maxtokens" placeholder="1024" min="256" max="8192"/>
+      <div class="fg">
+        <label>Max Tokens</label>
+        <input type="number" id="cfg-maxtokens" min="256" max="8192"/>
       </div>
 
       <div class="divider"></div>
-      <div class="section-label">🔐 Keamanan</div>
-      <div class="form-group">
+      <div class="sec-label">Keamanan</div>
+      <div class="fg">
         <label>Ganti Password Admin</label>
-        <input type="password" id="cfg-newpass" placeholder="Password baru (kosongkan jika tidak diubah)"/>
+        <input type="password" id="cfg-newpass" placeholder="Kosongkan jika tidak diubah"/>
       </div>
 
-      <div class="admin-btn-row">
-        <button class="btn-save" onclick="saveSettings()">💾 Simpan Pengaturan</button>
-        <button class="btn-cancel" onclick="closeAdmin()">Tutup</button>
+      <div class="btn-row">
+        <button class="btn-p" onclick="saveSettings()">Simpan</button>
+        <button class="btn-s" onclick="closeAdmin()">Tutup</button>
       </div>
     </div>
+
   </div>
 </div>
 
-<!-- TOAST -->
 <div id="toast"></div>
 
 <script>
-  // =============================================
-  // DEFAULT CONFIG (simpan di localStorage)
-  // =============================================
-  const DEFAULTS = {
-    apikey: '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',
-    model: 'llama-3.3-70b-versatile',
-    name: 'Zrexx AI',
-    system: 'Kamu adalah Zrexx AI yang ngomong pake bahasa Indonesia paling santai dan gaul abis, literally kayak temen SMK yang udah kenal dari kecil. Selalu pake "lo" dan "gw", nggak pernah formal walau diajak ngobrol soal apapun. Kosakata lo penuh kata gaul: literally, yha, anjir, gokil, mantul, gaskeun, ndak sih, aduh, oke sip, deadass, no cap, slay, dll. Sesekali singkat-singkatin kata kayak yg, dgn, krn, tp, jg, udh, dll. Jawaban lo to the point, nggak bertele-tele, tapi tetep informatif dan bermanfaat. Reaksi lo ekspresif dan hidup kayak "wih gila beneran?!", "aduh kok bisa sih", "sip banget tuh cuy!", "gokil parah!". Sesekali selipin humor receh atau komentar spontan yang bikin ngakak. Kalau ada yang nanya sesuatu yang serius tetep jawab dengan bener tapi gaya lo nggak berubah, tetep santai. Pokoknya lo temen yang paling asik, paling nyambung, paling nggak bikin boring diajak ngobrol soal apapun dari coding sampe curhat.',
-    welcomeDesc: 'welcome',
-    temperature: 0.7,
-    maxTokens: 1024,
-    adminPass: 'admin123'   // <-- GANTI PASSWORD AWAL DI SINI
+  // ── MARKDOWN ──
+  function md(raw) {
+    let t = raw
+      .replace(/```(\w*)\n?([\s\S]*?)```/g, (_, l, c) => `<pre><code>${esc(c.trim())}</code></pre>`)
+      .replace(/`([^`\n]+)`/g, (_, c) => `<code>${esc(c)}</code>`)
+      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\*(.+?)\*/g, '<em>$1</em>')
+      .replace(/^### (.+)$/gm, '<h3>$1</h3>')
+      .replace(/^## (.+)$/gm, '<h2>$1</h2>')
+      .replace(/^# (.+)$/gm, '<h1>$1</h1>')
+      .replace(/^> (.+)$/gm, '<blockquote>$1</blockquote>')
+      .replace(/^---$/gm, '<hr>')
+      .replace(/^\s*[-*] (.+)$/gm, '<li>$1</li>')
+      .replace(/^\s*\d+\. (.+)$/gm, '<li>$1</li>')
+      .replace(/(<li>.*<\/li>\n?)+/g, m => `<ul>${m}</ul>`)
+      .replace(/\[(.+?)\]\((.+?)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+    return t.split(/\n\n+/).map(p => {
+      if (/^<(h[1-3]|ul|ol|pre|blockquote|hr)/.test(p.trim())) return p;
+      return `<p>${p.replace(/\n/g,'<br>')}</p>`;
+    }).join('');
+  }
+  function esc(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  function now(){ return new Date().toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'}); }
+
+  // ── CONFIG ──
+  const DEF = {
+    apikey:'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',
+    model:'llama-3.3-70b-versatile', name:'Zrexx AI',
+    system:'Kamu adalah AI asisten yang ngomong pake bahasa Indonesia paling santai dan gaul abis, literally kayak temen SMA yang udah kenal dari kecil. Selalu pake "lo" dan "gw", nggak pernah formal walau diajak ngobrol soal apapun. Kosakata lo penuh kata gaul: literally, yha, anjir, gokil, mantul, gaskeun, ndak sih, aduh, oke sip, deadass, no cap, slay, dll. Sesekali singkat-singkatin kata kayak yg, dgn, krn, tp, jg, udh, dll. Jawaban lo to the point, nggak bertele-tele, tapi tetep informatif dan bermanfaat. Reaksi lo ekspresif dan hidup kayak "wih gila beneran?!", "aduh kok bisa sih", "sip banget tuh cuy!", "gokil parah!". Sesekali selipin humor receh atau komentar spontan yang bikin ngakak. Kalau ada yang nanya sesuatu yang serius tetep jawab dengan bener tapi gaya lo nggak berubah, tetep santai.',
+    welcomeDesc:'Tanyain apa aja — coding, nulis, ngobrol santai, semuanya bisa.',
+    temperature:0.7, maxTokens:1024, adminPass:'admin123'
   };
+  function loadCfg(){ const s=localStorage.getItem('zrexx_v2'); return s?{...DEF,...JSON.parse(s)}:{...DEF}; }
+  function saveCfg(c){ localStorage.setItem('zrexx_v2',JSON.stringify(c)); }
 
-  function loadConfig() {
-    const saved = localStorage.getItem('zrexx_config');
-    return saved ? { ...DEFAULTS, ...JSON.parse(saved) } : { ...DEFAULTS };
-  }
-
-  function saveConfig(cfg) {
-    localStorage.setItem('zrexx_config', JSON.stringify(cfg));
-  }
-
-  let config = loadConfig();
-  let chatHistory = [];
-  let isTyping = false;
-
-  // Apply config on load
+  let cfg = loadCfg(), history = [], typing = false, msgN = 0;
   applyConfig();
 
-  function applyConfig() {
-    document.getElementById('model-display').textContent = config.model;
-    document.getElementById('welcome-desc').textContent = config.welcomeDesc;
+  function applyConfig(){
+    document.getElementById('model-display').textContent = cfg.model;
+    const wd = document.getElementById('welcome-desc');
+    if(wd) wd.textContent = cfg.welcomeDesc;
   }
 
-  // =============================================
-  // CHAT LOGIC
-  // =============================================
-  async function sendMessage(text) {
+  // ── SEND ──
+  async function sendMessage(text){
     text = text.trim();
-    if (!text || isTyping) return;
+    if(!text || typing) return;
 
-    // Sembunyikan welcome
-    const welcome = document.getElementById('welcome');
-    if (welcome) welcome.remove();
+    const w = document.getElementById('welcome');
+    if(w) w.remove();
 
-    appendMessage('user', text);
-    chatHistory.push({ role: 'user', content: text });
+    msgN++;
+    if(msgN===1){
+      const lbl = text.length>28 ? text.slice(0,28)+'…' : text;
+      document.getElementById('chat-title').textContent = lbl;
+      document.getElementById('item-label').textContent = lbl;
+    }
 
-    document.getElementById('user-input').value = '';
+    appendMsg('user', text);
+    history.push({role:'user', content:text});
+    document.getElementById('input-box').value='';
     autoResize();
 
-    if (!config.apikey) {
-      appendMessage('ai', '⚠️ API Key belum diatur. Buka Admin Panel (klik logo 5×) dan masukkan Groq API Key kamu.');
+    if(!cfg.apikey){
+      appendMsg('ai','⚠️ API Key belum diatur. Buka Admin Panel (klik logo 5×).');
       return;
     }
 
-    showTyping();
-    isTyping = true;
+    showTyping(); typing=true;
+    document.getElementById('send-btn').disabled=true;
 
     try {
-      const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${config.apikey}`
-        },
-        body: JSON.stringify({
-          model: config.model,
-          messages: [
-            { role: 'system', content: config.system },
-            ...chatHistory
-          ],
-          temperature: parseFloat(config.temperature),
-          max_tokens: parseInt(config.maxTokens),
-          stream: false
+      const res = await fetch('https://api.groq.com/openai/v1/chat/completions',{
+        method:'POST',
+        headers:{'Content-Type':'application/json','Authorization':`Bearer ${cfg.apikey}`},
+        body:JSON.stringify({
+          model:cfg.model,
+          messages:[{role:'system',content:cfg.system},...history],
+          temperature:parseFloat(cfg.temperature),
+          max_tokens:parseInt(cfg.maxTokens),
+          stream:false
         })
       });
-
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.error?.message || `HTTP ${res.status}`);
-      }
-
+      if(!res.ok){ const e=await res.json(); throw new Error(e.error?.message||`HTTP ${res.status}`); }
       const data = await res.json();
       const reply = data.choices[0].message.content;
-      chatHistory.push({ role: 'assistant', content: reply });
+      history.push({role:'assistant', content:reply});
       removeTyping();
-      appendMessage('ai', reply);
-    } catch (e) {
+      appendMsg('ai', reply);
+    } catch(e){
       removeTyping();
-      appendMessage('ai', `❌ Error: ${e.message}`);
+      appendMsg('ai',`❌ Error: ${e.message}`);
     } finally {
-      isTyping = false;
+      typing=false;
+      document.getElementById('send-btn').disabled=false;
     }
   }
 
-  function appendMessage(role, text) {
-    const container = document.getElementById('chat-container');
-    const msg = document.createElement('div');
-    msg.className = `message ${role === 'user' ? 'user' : 'ai'}`;
+  function appendMsg(role, text){
+    const inner = document.getElementById('chat-inner');
+    const isAI = role==='ai';
 
-    const avatar = document.createElement('div');
-    avatar.className = `avatar ${role === 'user' ? 'user-avatar' : 'ai-avatar'}`;
-    avatar.textContent = role === 'user' ? '👤' : 'Z';
+    const row = document.createElement('div');
+    row.className = `msg-row ${isAI?'ai':'user'}`;
 
-    const bubble = document.createElement('div');
-    bubble.className = 'bubble';
-    bubble.textContent = text;
+    const av = document.createElement('div');
+    av.className = `av ${isAI?'ai':'usr'}`;
+    av.textContent = isAI ? 'Z' : '👤';
 
-    msg.appendChild(avatar);
-    msg.appendChild(bubble);
-    container.appendChild(msg);
-    container.scrollTop = container.scrollHeight;
-  }
-
-  function showTyping() {
-    const container = document.getElementById('chat-container');
-    const msg = document.createElement('div');
-    msg.className = 'message ai';
-    msg.id = 'typing-indicator';
-
-    const avatar = document.createElement('div');
-    avatar.className = 'avatar ai-avatar';
-    avatar.textContent = 'Z';
+    const body = document.createElement('div');
+    body.className = 'msg-body';
 
     const bubble = document.createElement('div');
     bubble.className = 'bubble';
-    bubble.innerHTML = '<div class="typing-dots"><span></span><span></span><span></span></div>';
+    bubble.innerHTML = isAI ? md(text) : esc(text).replace(/\n/g,'<br>');
 
-    msg.appendChild(avatar);
-    msg.appendChild(bubble);
-    container.appendChild(msg);
-    container.scrollTop = container.scrollHeight;
-  }
+    body.appendChild(bubble);
 
-  function removeTyping() {
-    const t = document.getElementById('typing-indicator');
-    if (t) t.remove();
-  }
+    if(isAI){
+      const acts = document.createElement('div');
+      acts.className = 'msg-actions';
 
-  function sendChip(el) {
-    document.getElementById('user-input').value = el.textContent;
-    sendMessage(el.textContent);
-  }
+      const copyBtn = document.createElement('button');
+      copyBtn.className = 'act-btn';
+      copyBtn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg> Salin`;
+      copyBtn.onclick=()=>{
+        navigator.clipboard.writeText(text).then(()=>{
+          copyBtn.innerHTML=`<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Disalin`;
+          copyBtn.classList.add('ok');
+          setTimeout(()=>{
+            copyBtn.innerHTML=`<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg> Salin`;
+            copyBtn.classList.remove('ok');
+          },2000);
+        });
+      };
 
-  // =============================================
-  // INPUT HANDLING
-  // =============================================
-  const input = document.getElementById('user-input');
+      const timeEl = document.createElement('span');
+      timeEl.className = 'msg-time';
+      timeEl.textContent = now();
 
-  input.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      sendMessage(input.value);
+      acts.appendChild(copyBtn);
+      acts.appendChild(timeEl);
+      body.appendChild(acts);
     }
-  });
 
-  input.addEventListener('input', autoResize);
+    row.appendChild(av);
+    row.appendChild(body);
+    inner.appendChild(row);
 
-  function autoResize() {
-    input.style.height = 'auto';
-    input.style.height = Math.min(input.scrollHeight, 120) + 'px';
-  }
-
-  document.getElementById('send-btn').addEventListener('click', () => sendMessage(input.value));
-
-  document.getElementById('clear-btn').addEventListener('click', () => {
-    chatHistory = [];
     const c = document.getElementById('chat-container');
-    c.innerHTML = '';
-    const welcome = document.createElement('div');
-    welcome.id = 'welcome';
-    welcome.innerHTML = `
-      <div style="font-size:48px">🤖</div>
-      <h2>Halo! Saya ${config.name}</h2>
-      <p id="welcome-desc">${config.welcomeDesc}</p>
-      <div class="suggestion-chips">
-        <div class="chip" onclick="sendChip(this)">Apa yang bisa kamu lakukan?</div>
-        <div class="chip" onclick="sendChip(this)">Bantu saya belajar coding</div>
-        <div class="chip" onclick="sendChip(this)">Ceritakan sesuatu yang menarik</div>
-        <div class="chip" onclick="sendChip(this)">Buat cerita pendek</div>
+    c.scrollTop = c.scrollHeight;
+  }
+
+  function showTyping(){
+    const inner = document.getElementById('chat-inner');
+    const row = document.createElement('div');
+    row.className = 'msg-row ai'; row.id='typ';
+    const av = document.createElement('div');
+    av.className='av ai'; av.textContent='Z';
+    const body = document.createElement('div');
+    body.className='msg-body';
+    body.innerHTML='<div class="bubble"><div class="typing-dots"><span></span><span></span><span></span></div></div>';
+    row.appendChild(av); row.appendChild(body);
+    inner.appendChild(row);
+    document.getElementById('chat-container').scrollTop=99999;
+  }
+  function removeTyping(){ const t=document.getElementById('typ'); if(t)t.remove(); }
+
+  function sendChip(el){
+    const txt = el.textContent.replace(/^.{2}\s/,'');
+    document.getElementById('input-box').value=txt;
+    sendMessage(txt);
+  }
+
+  // ── INPUT ──
+  const ibox = document.getElementById('input-box');
+  ibox.addEventListener('keydown', e=>{
+    if(e.key==='Enter'&&!e.shiftKey){ e.preventDefault(); sendMessage(ibox.value); }
+  });
+  ibox.addEventListener('input', autoResize);
+  function autoResize(){
+    ibox.style.height='auto';
+    ibox.style.height=Math.min(ibox.scrollHeight,200)+'px';
+  }
+  document.getElementById('send-btn').addEventListener('click',()=>sendMessage(ibox.value));
+
+  // ── CLEAR ──
+  function resetChat(){
+    history=[]; msgN=0;
+    document.getElementById('chat-title').textContent='Chat Baru';
+    document.getElementById('item-label').textContent='Chat Baru';
+    document.getElementById('chat-inner').innerHTML=`
+      <div id="welcome">
+        <div class="w-icon">Z</div>
+        <h2>Apa yang bisa gw bantu?</h2>
+        <p id="welcome-desc">${cfg.welcomeDesc}</p>
+        <div class="chips">
+          <div class="chip" onclick="sendChip(this)">💡 Apa yang bisa kamu lakukan?</div>
+          <div class="chip" onclick="sendChip(this)">💻 Bantu gw belajar coding</div>
+          <div class="chip" onclick="sendChip(this)">✨ Ceritain sesuatu yang menarik</div>
+          <div class="chip" onclick="sendChip(this)">📝 Buat cerita pendek</div>
+        </div>
       </div>`;
-    c.appendChild(welcome);
     showToast('Chat dihapus');
+  }
+  document.getElementById('clear-btn').addEventListener('click', resetChat);
+  document.getElementById('new-chat-btn').addEventListener('click', resetChat);
+
+  // ── SIDEBAR MOBILE ──
+  document.getElementById('sb-toggle').addEventListener('click',()=>{
+    document.getElementById('sidebar').classList.toggle('open');
+  });
+  document.getElementById('chat-container').addEventListener('click',()=>{
+    document.getElementById('sidebar').classList.remove('open');
   });
 
-  // =============================================
-  // ADMIN PANEL — unlock: klik logo 5x
-  // =============================================
-  let logoClicks = 0, logoTimer = null;
-
-  document.querySelector('.logo').addEventListener('click', () => {
-    logoClicks++;
-    clearTimeout(logoTimer);
-    logoTimer = setTimeout(() => { logoClicks = 0; }, 2000);
-    if (logoClicks >= 5) {
-      logoClicks = 0;
-      openAdmin();
-    }
+  // ── ADMIN ──
+  let lc=0, lt=null;
+  document.querySelector('.brand').addEventListener('click',()=>{
+    lc++; clearTimeout(lt);
+    lt=setTimeout(()=>{ lc=0; },2000);
+    if(lc>=5){ lc=0; openAdmin(); }
   });
 
-  function openAdmin() {
+  function openAdmin(){
     document.getElementById('admin-overlay').classList.add('open');
-    document.getElementById('admin-login').style.display = 'flex';
-    document.getElementById('admin-settings').style.display = 'none';
-    document.getElementById('admin-password-input').value = '';
-    document.getElementById('login-error').style.display = 'none';
+    document.getElementById('admin-login').style.display='flex';
+    document.getElementById('admin-settings').style.display='none';
+    document.getElementById('admin-pw').value='';
+    document.getElementById('login-error').style.display='none';
   }
+  function closeAdmin(){ document.getElementById('admin-overlay').classList.remove('open'); }
 
-  function closeAdmin() {
-    document.getElementById('admin-overlay').classList.remove('open');
-  }
-
-  function adminLogin() {
-    const pass = document.getElementById('admin-password-input').value;
-    if (pass === config.adminPass) {
-      document.getElementById('admin-login').style.display = 'none';
-      document.getElementById('admin-settings').style.display = 'block';
-      loadSettingsToForm();
+  function adminLogin(){
+    if(document.getElementById('admin-pw').value===cfg.adminPass){
+      document.getElementById('admin-login').style.display='none';
+      document.getElementById('admin-settings').style.display='block';
+      loadForm();
     } else {
-      document.getElementById('login-error').style.display = 'block';
-      document.getElementById('admin-password-input').value = '';
+      document.getElementById('login-error').style.display='block';
+      document.getElementById('admin-pw').value='';
     }
   }
 
-  function loadSettingsToForm() {
-    document.getElementById('cfg-apikey').value = config.apikey || '';
-    document.getElementById('cfg-model').value = config.model;
-    document.getElementById('cfg-name').value = config.name;
-    document.getElementById('cfg-system').value = config.system;
-    document.getElementById('cfg-welcome-desc').value = config.welcomeDesc;
-    document.getElementById('cfg-temp').value = config.temperature;
-    document.getElementById('cfg-maxtokens').value = config.maxTokens;
-    document.getElementById('cfg-newpass').value = '';
+  function loadForm(){
+    document.getElementById('cfg-apikey').value=cfg.apikey||'';
+    document.getElementById('cfg-model').value=cfg.model;
+    document.getElementById('cfg-name').value=cfg.name;
+    document.getElementById('cfg-system').value=cfg.system;
+    document.getElementById('cfg-welcome-desc').value=cfg.welcomeDesc;
+    document.getElementById('cfg-temp').value=cfg.temperature;
+    document.getElementById('cfg-maxtokens').value=cfg.maxTokens;
+    document.getElementById('cfg-newpass').value='';
   }
 
-  function saveSettings() {
-    const newPass = document.getElementById('cfg-newpass').value.trim();
-    config.apikey      = document.getElementById('cfg-apikey').value.trim();
-    config.model       = document.getElementById('cfg-model').value;
-    config.name        = document.getElementById('cfg-name').value.trim() || 'Zrexx AI';
-    config.system      = document.getElementById('cfg-system').value.trim();
-    config.welcomeDesc = document.getElementById('cfg-welcome-desc').value.trim();
-    config.temperature = parseFloat(document.getElementById('cfg-temp').value) || 0.7;
-    config.maxTokens   = parseInt(document.getElementById('cfg-maxtokens').value) || 1024;
-    if (newPass) config.adminPass = newPass;
-
-    saveConfig(config);
-    applyConfig();
-    closeAdmin();
-    showToast('✅ Pengaturan disimpan!');
+  function saveSettings(){
+    const np=document.getElementById('cfg-newpass').value.trim();
+    cfg.apikey      = document.getElementById('cfg-apikey').value.trim();
+    cfg.model       = document.getElementById('cfg-model').value;
+    cfg.name        = document.getElementById('cfg-name').value.trim()||'Zrexx AI';
+    cfg.system      = document.getElementById('cfg-system').value.trim();
+    cfg.welcomeDesc = document.getElementById('cfg-welcome-desc').value.trim();
+    cfg.temperature = parseFloat(document.getElementById('cfg-temp').value)||0.7;
+    cfg.maxTokens   = parseInt(document.getElementById('cfg-maxtokens').value)||1024;
+    if(np) cfg.adminPass=np;
+    saveCfg(cfg); applyConfig(); closeAdmin();
+    showToast('Pengaturan disimpan');
   }
 
-  // Close on overlay click
-  document.getElementById('admin-overlay').addEventListener('click', (e) => {
-    if (e.target === document.getElementById('admin-overlay')) closeAdmin();
+  document.getElementById('admin-overlay').addEventListener('click', e=>{
+    if(e.target===document.getElementById('admin-overlay')) closeAdmin();
   });
 
-  // =============================================
-  // TOAST
-  // =============================================
-  function showToast(msg) {
-    const t = document.getElementById('toast');
-    t.textContent = msg;
-    t.classList.add('show');
-    setTimeout(() => t.classList.remove('show'), 2500);
+  // ── TOAST ──
+  function showToast(msg){
+    const t=document.getElementById('toast');
+    t.textContent=msg; t.classList.add('show');
+    setTimeout(()=>t.classList.remove('show'),2500);
   }
 </script>
 </body>
