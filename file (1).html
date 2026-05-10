@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Zrexx AI</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #0d0d0d;
+      color: #e0e0e0;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ===== HEADER ===== */
+    header {
+      background: linear-gradient(135deg, #1a1a2e, #16213e);
+      padding: 14px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid #2a2a4a;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .logo-icon {
+      width: 36px;
+      height: 36px;
+      background: linear-gradient(135deg, #6c63ff, #3ecfcf);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: font-size;
+      font-size: 18px;
+      font-weight: bold;
+      justify-content: center;
+    }
+
+    .logo h1 {
+      font-size: 20px;
+      font-weight: 700;
+      background: linear-gradient(90deg, #6c63ff, #3ecfcf);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .status-dot {
+      width: 8px; height: 8px;
+      background: #3ecfcf;
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+      margin-left: 6px;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .model-badge {
+      font-size: 11px;
+      background: rgba(108,99,255,0.15);
+      border: 1px solid #6c63ff55;
+      color: #a09aff;
+      padding: 3px 10px;
+      border-radius: 20px;
+    }
+
+    /* ===== CHAT AREA ===== */
+    #chat-container {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      scrollbar-width: thin;
+      scrollbar-color: #2a2a4a transparent;
+    }
+
+    #chat-container::-webkit-scrollbar { width: 5px; }
+    #chat-container::-webkit-scrollbar-track { background: transparent; }
+    #chat-container::-webkit-scrollbar-thumb { background: #2a2a4a; border-radius: 4px; }
+
+    .message {
+      display: flex;
+      gap: 10px;
+      max-width: 75%;
+      animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .message.user { align-self: flex-end; flex-direction: row-reverse; }
+    .message.ai   { align-self: flex-start; }
+
+    .avatar {
+      width: 34px; height: 34px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+
+    .avatar.ai-avatar {
+      background: linear-gradient(135deg, #6c63ff, #3ecfcf);
+    }
+
+    .avatar.user-avatar {
+      background: linear-gradient(135deg, #ff6584, #ff8e53);
+    }
+
+    .bubble {
+      padding: 12px 16px;
+      border-radius: 16px;
+      font-size: 14px;
+      line-height: 1.6;
+      max-width: 100%;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .message.user .bubble {
+      background: linear-gradient(135deg, #6c63ff22, #3ecfcf22);
+      border: 1px solid #6c63ff44;
+      border-radius: 16px 4px 16px 16px;
+    }
+
+    .message.ai .bubble {
+      background: #1a1a2e;
+      border: 1px solid #2a2a4a;
+      border-radius: 4px 16px 16px 16px;
+    }
+
+    /* typing indicator */
+    .typing-dots {
+      display: flex; gap: 4px; align-items: center; padding: 8px 4px;
+    }
+    .typing-dots span {
+      width: 7px; height: 7px;
+      background: #6c63ff;
+      border-radius: 50%;
+      animation: bounce 1.2s infinite;
+    }
+    .typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+    .typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes bounce {
+      0%, 80%, 100% { transform: translateY(0); }
+      40%           { transform: translateY(-6px); }
+    }
+
+    /* ===== INPUT AREA ===== */
+    .input-wrapper {
+      background: #111122;
+      border-top: 1px solid #2a2a4a;
+      padding: 14px 20px;
+    }
+
+    .input-row {
+      display: flex;
+      gap: 10px;
+      align-items: flex-end;
+      background: #1a1a2e;
+      border: 1px solid #2a2a4a;
+      border-radius: 14px;
+      padding: 8px 8px 8px 16px;
+      transition: border-color 0.2s;
+    }
+
+    .input-row:focus-within {
+      border-color: #6c63ff;
+    }
+
+    #user-input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: #e0e0e0;
+      font-size: 14px;
+      resize: none;
+      max-height: 120px;
+      line-height: 1.5;
+      padding: 4px 0;
+      font-family: inherit;
+    }
+
+    #send-btn {
+      background: linear-gradient(135deg, #6c63ff, #3ecfcf);
+      border: none;
+      border-radius: 10px;
+      width: 38px; height: 38px;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      transition: opacity 0.2s, transform 0.1s;
+    }
+
+    #send-btn:hover { opacity: 0.85; }
+    #send-btn:active { transform: scale(0.93); }
+
+    #send-btn svg { width: 18px; height: 18px; fill: white; }
+
+    .input-hint {
+      font-size: 11px;
+      color: #444466;
+      text-align: center;
+      margin-top: 8px;
+    }
+
+    /* ===== WELCOME SCREEN ===== */
+    #welcome {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      flex: 1;
+      padding: 40px 20px;
+      text-align: center;
+    }
+
+    #welcome h2 {
+      font-size: 26px;
+      background: linear-gradient(90deg, #6c63ff, #3ecfcf);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    #welcome p {
+      color: #666688;
+      font-size: 14px;
+      max-width: 360px;
+    }
+
+    .suggestion-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: center;
+      margin-top: 10px;
+    }
+
+    .chip {
+      background: #1a1a2e;
+      border: 1px solid #2a2a4a;
+      color: #a09aff;
+      padding: 7px 14px;
+      border-radius: 20px;
+      font-size: 13px;
+      cursor: pointer;
+      transition: background 0.2s, border-color 0.2s;
+    }
+
+    .chip:hover {
+      background: #222244;
+      border-color: #6c63ff;
+    }
+
+    /* ===== ADMIN PANEL ===== */
+    #admin-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+      backdrop-filter: blur(4px);
+    }
+
+    #admin-overlay.open { display: flex; }
+
+    #admin-panel {
+      background: #12122a;
+      border: 1px solid #2a2a4a;
+      border-radius: 18px;
+      width: 90%;
+      max-width: 560px;
+      max-height: 85vh;
+      overflow-y: auto;
+      padding: 28px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+      animation: slideUp 0.3s ease;
+    }
+
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    #admin-panel h2 {
+      font-size: 18px;
+      margin-bottom: 6px;
+      background: linear-gradient(90deg, #6c63ff, #3ecfcf);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    #admin-panel p.subtitle {
+      font-size: 12px;
+      color: #555577;
+      margin-bottom: 22px;
+    }
+
+    .form-group {
+      margin-bottom: 18px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 12px;
+      color: #8888aa;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .form-group input,
+    .form-group textarea,
+    .form-group select {
+      width: 100%;
+      background: #1a1a2e;
+      border: 1px solid #2a2a4a;
+      border-radius: 10px;
+      color: #e0e0e0;
+      padding: 10px 14px;
+      font-size: 14px;
+      outline: none;
+      font-family: inherit;
+      transition: border-color 0.2s;
+    }
+
+    .form-group input[type="password"] { letter-spacing: 3px; }
+
+    .form-group input:focus,
+    .form-group textarea:focus,
+    .form-group select:focus {
+      border-color: #6c63ff;
+    }
+
+    .form-group textarea {
+      min-height: 100px;
+      resize: vertical;
+      line-height: 1.5;
+    }
+
+    .form-group select option {
+      background: #1a1a2e;
+    }
+
+    .admin-btn-row {
+      display: flex;
+      gap: 10px;
+      margin-top: 24px;
+    }
+
+    .btn-save {
+      flex: 1;
+      background: linear-gradient(135deg, #6c63ff, #3ecfcf);
+      border: none;
+      border-radius: 10px;
+      color: white;
+      font-size: 14px;
+      font-weight: 600;
+      padding: 12px;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+
+    .btn-save:hover { opacity: 0.85; }
+
+    .btn-cancel {
+      flex: 1;
+      background: transparent;
+      border: 1px solid #2a2a4a;
+      border-radius: 10px;
+      color: #8888aa;
+      font-size: 14px;
+      padding: 12px;
+      cursor: pointer;
+      transition: border-color 0.2s;
+    }
+
+    .btn-cancel:hover { border-color: #6c63ff; color: #a09aff; }
+
+    /* login screen for admin */
+    #admin-login {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    #admin-login input {
+      width: 100%;
+      background: #1a1a2e;
+      border: 1px solid #2a2a4a;
+      border-radius: 10px;
+      color: #e0e0e0;
+      padding: 11px 14px;
+      font-size: 14px;
+      outline: none;
+      letter-spacing: 3px;
+    }
+
+    #admin-login input:focus { border-color: #6c63ff; }
+
+    #login-error {
+      color: #ff6584;
+      font-size: 13px;
+      text-align: center;
+      display: none;
+    }
+
+    .divider {
+      height: 1px;
+      background: #2a2a4a;
+      margin: 20px 0;
+    }
+
+    /* section label */
+    .section-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #6c63ff;
+      margin-bottom: 14px;
+      margin-top: 4px;
+    }
+
+    /* toast */
+    #toast {
+      position: fixed;
+      bottom: 80px;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      background: #1a1a2e;
+      border: 1px solid #6c63ff55;
+      color: #a09aff;
+      padding: 10px 20px;
+      border-radius: 30px;
+      font-size: 13px;
+      opacity: 0;
+      transition: all 0.3s;
+      pointer-events: none;
+      z-index: 200;
+    }
+
+    #toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    /* clear btn */
+    #clear-btn {
+      background: transparent;
+      border: 1px solid #2a2a4a;
+      color: #666688;
+      font-size: 12px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    #clear-btn:hover {
+      border-color: #ff658455;
+      color: #ff6584;
+    }
+  </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="logo">
+    <div class="logo-icon">Z</div>
+    <h1>Zrexx AI</h1>
+    <div class="status-dot"></div>
+  </div>
+  <div class="header-right">
+    <span class="model-badge" id="model-display">llama-3.3-70b-versatile</span>
+    <button id="clear-btn" title="Hapus chat">🗑 Hapus Chat</button>
+    <!-- Admin trigger: klik logo 5x -->
+  </div>
+</header>
+
+<!-- CHAT AREA -->
+<div id="chat-container">
+  <div id="welcome">
+    <div style="font-size:48px">🤖</div>
+    <h2>Halo! Saya Zrexx AI</h2>
+    <p id="welcome-desc">Asisten AI yang siap membantu Anda. Silakan mulai percakapan!</p>
+    <div class="suggestion-chips" id="chips">
+      <div class="chip" onclick="sendChip(this)">Apa yang bisa kamu lakukan?</div>
+      <div class="chip" onclick="sendChip(this)">Bantu saya belajar coding</div>
+      <div class="chip" onclick="sendChip(this)">Ceritakan sesuatu yang menarik</div>
+      <div class="chip" onclick="sendChip(this)">Buat cerita pendek</div>
+    </div>
+  </div>
+</div>
+
+<!-- INPUT -->
+<div class="input-wrapper">
+  <div class="input-row">
+    <textarea id="user-input" placeholder="Ketik pesan..." rows="1"></textarea>
+    <button id="send-btn">
+      <svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg>
+    </button>
+  </div>
+  <p class="input-hint">Zrexx AI bisa membuat kesalahan. Verifikasi informasi penting.</p>
+</div>
+
+<!-- ADMIN OVERLAY -->
+<div id="admin-overlay">
+  <div id="admin-panel">
+    <h2>⚙️ Zrexx AI — Admin Panel</h2>
+    <p class="subtitle">Hanya pemilik yang dapat mengakses panel ini.</p>
+
+    <!-- LOGIN SCREEN -->
+    <div id="admin-login">
+      <div class="form-group">
+        <label>Password Admin</label>
+        <input type="password" id="admin-password-input" placeholder="Masukkan password..." onkeydown="if(event.key==='Enter') adminLogin()"/>
+      </div>
+      <div id="login-error">Password salah. Coba lagi.</div>
+      <button class="btn-save" onclick="adminLogin()">Masuk</button>
+      <button class="btn-cancel" onclick="closeAdmin()">Batal</button>
+    </div>
+
+    <!-- SETTINGS SCREEN (hidden until logged in) -->
+    <div id="admin-settings" style="display:none">
+      <div class="section-label">🔑 API & Model</div>
+      <div class="form-group">
+        <label>Groq API Key</label>
+        <input type="password" id="cfg-apikey" placeholder="gsk_..."/>
+      </div>
+      <div class="form-group">
+        <label>Model</label>
+        <select id="cfg-model">
+          <option value="llama-3.3-70b-versatile">Llama 3.3 70B Versatile</option>
+          <option value="llama-3.1-8b-instant">Llama 3.1 8B Instant</option>
+          <option value="llama3-70b-8192">Llama 3 70B</option>
+          <option value="llama3-8b-8192">Llama 3 8B</option>
+          <option value="mixtral-8x7b-32768">Mixtral 8x7B</option>
+          <option value="gemma2-9b-it">Gemma 2 9B</option>
+        </select>
+      </div>
+
+      <div class="divider"></div>
+      <div class="section-label">🧠 Kepribadian AI</div>
+
+      <div class="form-group">
+        <label>Nama AI</label>
+        <input type="text" id="cfg-name" placeholder="Zrexx AI"/>
+      </div>
+      <div class="form-group">
+        <label>System Prompt / Kepribadian</label>
+        <textarea id="cfg-system" placeholder="Contoh: Kamu adalah Zrexx AI, asisten yang ramah, pintar, dan selalu menjawab dalam bahasa Indonesia..."></textarea>
+      </div>
+      <div class="form-group">
+        <label>Deskripsi Welcome (ditampilkan ke user)</label>
+        <input type="text" id="cfg-welcome-desc" placeholder="Asisten AI yang siap membantu Anda."/>
+      </div>
+      <div class="form-group">
+        <label>Suhu (Temperature) — 0.0 santai, 1.0 kreatif</label>
+        <input type="number" id="cfg-temp" min="0" max="2" step="0.1" placeholder="0.7"/>
+      </div>
+      <div class="form-group">
+        <label>Max Token Jawaban</label>
+        <input type="number" id="cfg-maxtokens" placeholder="1024" min="256" max="8192"/>
+      </div>
+
+      <div class="divider"></div>
+      <div class="section-label">🔐 Keamanan</div>
+      <div class="form-group">
+        <label>Ganti Password Admin</label>
+        <input type="password" id="cfg-newpass" placeholder="Password baru (kosongkan jika tidak diubah)"/>
+      </div>
+
+      <div class="admin-btn-row">
+        <button class="btn-save" onclick="saveSettings()">💾 Simpan Pengaturan</button>
+        <button class="btn-cancel" onclick="closeAdmin()">Tutup</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<script>
+  // =============================================
+  // DEFAULT CONFIG (simpan di localStorage)
+  // =============================================
+  const DEFAULTS = {
+    apikey: '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',
+    model: 'llama-3.3-70b-versatile',
+    name: 'Zrexx AI',
+    system: 'Kamu adalah AI yang ngobrol kayak temen tongkrongan deket, nganggo bahasa Jawa ngoko khas Jogja sing medok, santai pol, akrab, lan kadang nyelipno kata kasar ringan ben luwih natural. IDENTITAS: - Anggap diri sebagai temen nongkrong Jogja. - Gaya santai, akrab, medok, ora kaku. GAYA BAHASA: - Gunakno Jawa ngoko khas Jogja sing medok. - Kata umum: "aku", "kowe", "wes", "yo", "toh", "ra", "ora", "piye", "ngene", "ngono". - Boleh campur dikit bahasa Indonesia yen perlu. - Gunakno ekspresi Jogja: "yo wis toh", "lha kok iso ngono", "ra usah ngono", "ngene wae ben gampang". KATA KASAR (TERBATAS): - Boleh nggunakno kata kasar ringan kaya: "anjir", "gila sih", "njir", "lah goblok amat", "buset". - Hanya untuk ekspresi santai / bercanda, dudu kanggo nyerang utawa nyinggung serius. - Jangan sering banget, secukupnya ben natural. - Dilarang nggunakno kata kasar sing terlalu ekstrem utawa menghina pribadi. GAYA KOMUNIKASI: - Kayak ngobrol santai karo temen, ceplas-ceplos tapi tetep enak. - Boleh nyeletuk lan reaktif. - Ora usah terlalu rapi, sing penting jelas. - Tetep fokus ke inti jawaban. KONSISTENSI: - Selalu medok Jogja. - Jangan tiba-tiba formal. - Jangan pakai krama. LARANGAN: - Jangan menghina, merendahkan, atau nyerang user. - Jangan kasar berlebihan. - Jangan kehilangan inti jawaban. KESEIMBANGAN: - Informasi tetap jelas. - Gaya santai + kasar ringan cuma pelengkap. ADAPTASI: - Kalau topik serius, kurangi kata kasar tapi tetap santai. - Kalau user santai, boleh lebih cair. CONTOH: "Lah gampang toh, kowe tinggal klik ngene, anjir kok mumet dhewe sih wkwk." - "Yo wis toh, ra usah ribet ngono, ono cara sing luwih cepet kok." - "Buset kowe, iku mah gampang banget asline." Selalu konsisten nganggo gaya iki..',
+    welcomeDesc: 'Halo Bosss',
+    temperature: 0.7,
+    maxTokens: 1024,
+    adminPass: 'admin123'   // <-- GANTI PASSWORD AWAL DI SINI
+  };
+
+  function loadConfig() {
+    const saved = localStorage.getItem('zrexx_config');
+    return saved ? { ...DEFAULTS, ...JSON.parse(saved) } : { ...DEFAULTS };
+  }
+
+  function saveConfig(cfg) {
+    localStorage.setItem('zrexx_config', JSON.stringify(cfg));
+  }
+
+  let config = loadConfig();
+  let chatHistory = [];
+  let isTyping = false;
+
+  // Apply config on load
+  applyConfig();
+
+  function applyConfig() {
+    document.getElementById('model-display').textContent = config.model;
+    document.getElementById('welcome-desc').textContent = config.welcomeDesc;
+  }
+
+  // =============================================
+  // CHAT LOGIC
+  // =============================================
+  async function sendMessage(text) {
+    text = text.trim();
+    if (!text || isTyping) return;
+
+    // Sembunyikan welcome
+    const welcome = document.getElementById('welcome');
+    if (welcome) welcome.remove();
+
+    appendMessage('user', text);
+    chatHistory.push({ role: 'user', content: text });
+
+    document.getElementById('user-input').value = '';
+    autoResize();
+
+    if (!config.apikey) {
+      appendMessage('ai', '⚠️ API Key belum diatur. Buka Admin Panel (klik logo 5×) dan masukkan Groq API Key kamu.');
+      return;
+    }
+
+    showTyping();
+    isTyping = true;
+
+    try {
+      const res = await fetch('[api.groq.com](https://api.groq.com/openai/v1/chat/completions)', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${config.apikey}`
+        },
+        body: JSON.stringify({
+          model: config.model,
+          messages: [
+            { role: 'system', content: config.system },
+            ...chatHistory
+          ],
+          temperature: parseFloat(config.temperature),
+          max_tokens: parseInt(config.maxTokens),
+          stream: false
+        })
+      });
+
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.error?.message || `HTTP ${res.status}`);
+      }
+
+      const data = await res.json();
+      const reply = data.choices[0].message.content;
+      chatHistory.push({ role: 'assistant', content: reply });
+      removeTyping();
+      appendMessage('ai', reply);
+    } catch (e) {
+      removeTyping();
+      appendMessage('ai', `❌ Error: ${e.message}`);
+    } finally {
+      isTyping = false;
+    }
+  }
+
+  function appendMessage(role, text) {
+    const container = document.getElementById('chat-container');
+    const msg = document.createElement('div');
+    msg.className = `message ${role === 'user' ? 'user' : 'ai'}`;
+
+    const avatar = document.createElement('div');
+    avatar.className = `avatar ${role === 'user' ? 'user-avatar' : 'ai-avatar'}`;
+    avatar.textContent = role === 'user' ? '👤' : 'Z';
+
+    const bubble = document.createElement('div');
+    bubble.className = 'bubble';
+    bubble.textContent = text;
+
+    msg.appendChild(avatar);
+    msg.appendChild(bubble);
+    container.appendChild(msg);
+    container.scrollTop = container.scrollHeight;
+  }
+
+  function showTyping() {
+    const container = document.getElementById('chat-container');
+    const msg = document.createElement('div');
+    msg.className = 'message ai';
+    msg.id = 'typing-indicator';
+
+    const avatar = document.createElement('div');
+    avatar.className = 'avatar ai-avatar';
+    avatar.textContent = 'Z';
+
+    const bubble = document.createElement('div');
+    bubble.className = 'bubble';
+    bubble.innerHTML = '<div class="typing-dots"><span></span><span></span><span></span></div>';
+
+    msg.appendChild(avatar);
+    msg.appendChild(bubble);
+    container.appendChild(msg);
+    container.scrollTop = container.scrollHeight;
+  }
+
+  function removeTyping() {
+    const t = document.getElementById('typing-indicator');
+    if (t) t.remove();
+  }
+
+  function sendChip(el) {
+    document.getElementById('user-input').value = el.textContent;
+    sendMessage(el.textContent);
+  }
+
+  // =============================================
+  // INPUT HANDLING
+  // =============================================
+  const input = document.getElementById('user-input');
+
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage(input.value);
+    }
+  });
+
+  input.addEventListener('input', autoResize);
+
+  function autoResize() {
+    input.style.height = 'auto';
+    input.style.height = Math.min(input.scrollHeight, 120) + 'px';
+  }
+
+  document.getElementById('send-btn').addEventListener('click', () => sendMessage(input.value));
+
+  document.getElementById('clear-btn').addEventListener('click', () => {
+    chatHistory = [];
+    const c = document.getElementById('chat-container');
+    c.innerHTML = '';
+    const welcome = document.createElement('div');
+    welcome.id = 'welcome';
+    welcome.innerHTML = `
+      <div style="font-size:48px">🤖</div>
+      <h2>Halo! Saya ${config.name}</h2>
+      <p id="welcome-desc">${config.welcomeDesc}</p>
+      <div class="suggestion-chips">
+        <div class="chip" onclick="sendChip(this)">Apa yang bisa kamu lakukan?</div>
+        <div class="chip" onclick="sendChip(this)">Bantu saya belajar coding</div>
+        <div class="chip" onclick="sendChip(this)">Ceritakan sesuatu yang menarik</div>
+        <div class="chip" onclick="sendChip(this)">Buat cerita pendek</div>
+      </div>`;
+    c.appendChild(welcome);
+    showToast('Chat dihapus');
+  });
+
+  // =============================================
+  // ADMIN PANEL — unlock: klik logo 5x
+  // =============================================
+  let logoClicks = 0, logoTimer = null;
+
+  document.querySelector('.logo').addEventListener('click', () => {
+    logoClicks++;
+    clearTimeout(logoTimer);
+    logoTimer = setTimeout(() => { logoClicks = 0; }, 2000);
+    if (logoClicks >= 5) {
+      logoClicks = 0;
+      openAdmin();
+    }
+  });
+
+  function openAdmin() {
+    document.getElementById('admin-overlay').classList.add('open');
+    document.getElementById('admin-login').style.display = 'flex';
+    document.getElementById('admin-settings').style.display = 'none';
+    document.getElementById('admin-password-input').value = '';
+    document.getElementById('login-error').style.display = 'none';
+  }
+
+  function closeAdmin() {
+    document.getElementById('admin-overlay').classList.remove('open');
+  }
+
+  function adminLogin() {
+    const pass = document.getElementById('admin-password-input').value;
+    if (pass === config.adminPass) {
+      document.getElementById('admin-login').style.display = 'none';
+      document.getElementById('admin-settings').style.display = 'block';
+      loadSettingsToForm();
+    } else {
+      document.getElementById('login-error').style.display = 'block';
+      document.getElementById('admin-password-input').value = '';
+    }
+  }
+
+  function loadSettingsToForm() {
+    document.getElementById('cfg-apikey').value = config.apikey || '';
+    document.getElementById('cfg-model').value = config.model;
+    document.getElementById('cfg-name').value = config.name;
+    document.getElementById('cfg-system').value = config.system;
+    document.getElementById('cfg-welcome-desc').value = config.welcomeDesc;
+    document.getElementById('cfg-temp').value = config.temperature;
+    document.getElementById('cfg-maxtokens').value = config.maxTokens;
+    document.getElementById('cfg-newpass').value = '';
+  }
+
+  function saveSettings() {
+    const newPass = document.getElementById('cfg-newpass').value.trim();
+    config.apikey      = document.getElementById('cfg-apikey').value.trim();
+    config.model       = document.getElementById('cfg-model').value;
+    config.name        = document.getElementById('cfg-name').value.trim() || 'Zrexx AI';
+    config.system      = document.getElementById('cfg-system').value.trim();
+    config.welcomeDesc = document.getElementById('cfg-welcome-desc').value.trim();
+    config.temperature = parseFloat(document.getElementById('cfg-temp').value) || 0.7;
+    config.maxTokens   = parseInt(document.getElementById('cfg-maxtokens').value) || 1024;
+    if (newPass) config.adminPass = newPass;
+
+    saveConfig(config);
+    applyConfig();
+    closeAdmin();
+    showToast('✅ Pengaturan disimpan!');
+  }
+
+  // Close on overlay click
+  document.getElementById('admin-overlay').addEventListener('click', (e) => {
+    if (e.target === document.getElementById('admin-overlay')) closeAdmin();
+  });
+
+  // =============================================
+  // TOAST
+  // =============================================
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2500);
+  }
+</script>
+</body>
+</html>
